@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cardápio Digital - Sabor & Arte</title>
+<style>
+  body{font-family:Arial, sans-serif;margin:0;padding:0;background:#f7f7f7;}
+  header{background:#c0392b;color:white;padding:10px;text-align:center;}
+  nav button{margin:5px;padding:8px 12px;}
+  main{padding:15px;}
+  .card{background:white;border-radius:8px;padding:10px;margin:10px;box-shadow:0 0 5px #ccc;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;}
+  .btn{background:#c0392b;color:white;border:none;padding:6px 10px;border-radius:5px;cursor:pointer;}
+  #cart{background:white;padding:10px;border-radius:8px;margin-top:20px;}
+  #admin, #checkout{display:none;}
+  input, textarea{width:100%;padding:6px;margin:5px 0;}
+</style>
+</head>
+<body>
+<header>
+  <h1>Sabor & Arte</h1>
+  <nav>
+    <button onclick="showPage('menu')">Cardápio</button>
+    <button onclick="showPage('cart')">Carrinho (<span id='count'>0</span>)</button>
+    <button onclick="showPage('adminLogin')">Área Admin</button>
+  </nav>
+</header>
+
+<main>
+ 
+  <section id="menu">
+    <h2>Cardápio</h2>
+    <div class="grid" id="produtos"></div>
+  </section>
+
+
+  <section id="cart" style="display:none">
+    <h2>Seu Carrinho</h2>
+    <div id="itens"></div>
+    <p><b>Total: R$ <span id="total">0.00</span></b></p>
+    <button class="btn" onclick="showPage('checkout')">Finalizar Pedido</button>
+  </section>
+
+
+  <section id="checkout">
+    <h2>Finalizar Pedido</h2>
+    <form onsubmit="confirmarPedido(event)">
+      <input placeholder="Nome completo" required>
+      <textarea placeholder="Endereço de entrega" required></textarea>
+      <button class="btn">Confirmar Pedido</button>
+    </form>
+  </section>
+
+
+  <section id="adminLogin" style="display:none">
+    <h2>Login Admin</h2>
+    <form onsubmit="login(event)">
+      <input id="email" type="email" placeholder="Email" required>
+      <input id="senha" type="password" placeholder="Senha" required>
+      <button class="btn">Entrar</button>
+    </form>
+  </section>
+
+
+  <section id="admin" style="display:none">
+    <h2>Painel Admin</h2>
+    <form onsubmit="addProduto(event)">
+      <input id="nomeProd" placeholder="Nome do produto" required>
+      <input id="precoProd" type="number" step="0.01" placeholder="Preço" required>
+      <button class="btn">Adicionar Produto</button>
+    </form>
+    <div id="listaAdmin"></div>
+  </section>
+</main>
+
+<script>
+let produtos = [
+  {nome:'Pizza', preco:35.00},
+  {nome:'Lasanha', preco:28.50},
+  {nome:'Suco Natural', preco:7.00},
+];
+let carrinho = [];
+
+function renderProdutos(){
+  const div = document.getElementById('produtos');
+  div.innerHTML = produtos.map((p,i)=>`
+    <div class='card'>
+      <h3>${p.nome}</h3>
+      <p>Preço: R$${p.preco.toFixed(2)}</p>
+      <button class='btn' onclick='addCarrinho(${i})'>Adicionar</button>
+    </div>`).join('');
+}
+
+function addCarrinho(i){
+  carrinho.push(produtos[i]);
+  document.getElementById('count').innerText = carrinho.length;
+  alert('Produto adicionado!');
+}
+
+function showPage(id){
+  ['menu','cart','adminLogin','admin','checkout'].forEach(p=>document.getElementById(p).style.display='none');
+  document.getElementById(id).style.display='block';
+  if(id==='cart') renderCarrinho();
+  if(id==='admin') renderAdmin();
+}
+
+function renderCarrinho(){
+  let html = '';
+  let total = 0;
+  carrinho.forEach((c,i)=>{
+    html += `<p>${c.nome} - R$${c.preco.toFixed(2)} <button onclick='removeItem(${i})'>x</button></p>`;
+    total += c.preco;
+  });
+  document.getElementById('itens').innerHTML = html || '<p>Carrinho vazio.</p>';
+  document.getElementById('total').innerText = total.toFixed(2);
+}
+
+function removeItem(i){
+  carrinho.splice(i,1);
+  document.getElementById('count').innerText = carrinho.length;
+  renderCarrinho();
+}
+
+function confirmarPedido(e){
+  e.preventDefault();
+  alert('Pedido confirmado! (simulação)');
+  carrinho = [];
+  document.getElementById('count').innerText = 0;
+  showPage('menu');
+}
+
+function login(e){
+  e.preventDefault();
+  const email = document.getElementById('email').value;
+  const senha = document.getElementById('senha').value;
+  if(email==='admin@saborarte.com' && senha==='123'){
+    showPage('admin');
+  }else{
+    alert('Credenciais inválidas.');
+  }
+}
+
+function addProduto(e){
+  e.preventDefault();
+  const nome = document.getElementById('nomeProd').value;
+  const preco = parseFloat(document.getElementById('precoProd').value);
+  produtos.push({nome,preco});
+  renderProdutos();
+  renderAdmin();
+  e.target.reset();
+}
+
+function renderAdmin(){
+  document.getElementById('listaAdmin').innerHTML = produtos.map(p=>`<p>${p.nome} - R$${p.preco.toFixed(2)}</p>`).join('');
+}
+
+renderProdutos();
+</script>
+</body>
+</html>
